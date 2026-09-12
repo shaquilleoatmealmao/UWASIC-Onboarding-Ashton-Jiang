@@ -24,7 +24,18 @@ module tt_um_uwasic_onboarding_ashton_jiang
   wire [7:0] en_reg_pwm_15_8;
   wire [7:0] pwm_duty_cycle;
 
-
+  spi_peripheral spi_peripheral_inst ( // instantiating (basically meaning to use the module we created earlier) almost like creating a copy
+    .clk(clk), //the first clk is the input of the original module, and the second clk is the input of this second new module, ad we are connecting the two together
+    .rst_n(rst_n),
+    .ncs(ui_in[2]),//the 2 means the third bit of the input, which is
+    .sclk(ui_in[0]),
+    .copi(ui_in[1]), //so basically it is conencting the .copi of the spi_peripheral module to the physical input of the chip
+    .en_reg_out_7_0(en_reg_out_7_0),
+    .en_reg_out_15_8(en_reg_out_15_8),
+    .en_reg_pwm_7_0(en_reg_pwm_7_0),
+    .en_reg_pwm_15_8(en_reg_pwm_15_8),
+    .pwm_duty_cycle(pwm_duty_cycle)//so all of these
+  );
   pwm_peripheral pwm_peripheral_inst (
     .clk(clk),
     .rst_n(rst_n),

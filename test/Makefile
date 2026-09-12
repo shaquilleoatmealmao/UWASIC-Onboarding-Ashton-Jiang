@@ -37,6 +37,10 @@ COMPILE_ARGS 		+= -I$(SRC_DIR)
 VERILOG_SOURCES += $(PWD)/tb.v
 TOPLEVEL = tb
 
+ifeq ($(SIM),verilator)
+COMPILE_ARGS += --timing
+endif
+
 # MODULE is the basename of the Python test file
 MODULE = test
 
