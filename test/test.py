@@ -8,6 +8,7 @@ from cocotb.triggers import FallingEdge
 from cocotb.triggers import ClockCycles
 from cocotb.types import Logic
 from cocotb.types import LogicArray
+from cocotb.triggers import Edge
 
 async def await_half_sclk(dut):
     """Wait for the SCLK signal to go high or low."""
@@ -83,6 +84,13 @@ async def send_spi_transaction(dut, r_w, address, data):
     dut.ui_in.value = ui_in_logicarray(ncs, bit, sclk)
     await ClockCycles(dut.clk, 600)
     return ui_in_logicarray(ncs, bit, sclk)
+
+async def wait_for_uo0_level(dut, expected_level):
+    while True:
+        await Edge(dut.uo_out)
+        if (int(dut.uo_out.value) & 0x01) == expected_level:
+            return
+
 
 @cocotb.test()
 async def test_spi(dut):
@@ -164,10 +172,10 @@ async def test_pwm_freq(dut):
     await send_spi_transaction(dut, 1, 0x00, 0x01) # this is a write transaction, so it will write to the address 0x00 and the data is 0x01, which means that the output will be enabled
     await send_spi_transaction(dut, 1, 0x02, 0x01) #this transaction goes to the address 0x02 and then turns it on, so the output will be inabled and the frequency will be 1 Hz
     await send_spi_transaction(dut, 1, 0x04, 0x80) #it is writing 8, which is half of the hex 128 that is the full space of the reg which means that the pwm will be 50%
-    await RisingEdge(dut.uo_out[0])
+    await wait_for_uo0_level(dut, 1)
     first_rise_ns = cocotb.utils.get_sim_time(units="ns")
 
-    await RisingEdge(dut.uo_out[0])
+    await wait_for_uo0_level(dut, 1)
     second_rise_ns = cocotb.utils.get_sim_time(units="ns")
 
     period_ns = second_rise_ns - first_rise_ns
@@ -190,13 +198,13 @@ async def test_pwm_duty(dut):
     await send_spi_transaction(dut, 1, 0x00, 0x01)
     await send_spi_transaction(dut, 1, 0x02, 0x01)
     await send_spi_transaction(dut, 1, 0x04, 0x80)
-    await RisingEdge(dut.uo_out[0])
+    await wait_for_uo0_level(dut, 1)
     rise_1_ns = cocotb.utils.get_sim_time(units="ns")
 
-    await FallingEdge(dut.uo_out[0])
+    await wait_for_uo0_level(dut, 0)
     fall_ns = cocotb.utils.get_sim_time(units="ns")
 
-    await RisingEdge(dut.uo_out[0])
+    await wait_for_uo0_level(dut, 1)
     rise_2_ns = cocotb.utils.get_sim_time(units="ns")
 
     high_time_ns = fall_ns - rise_1_ns
@@ -233,3 +241,4 @@ async def test_pwm_duty(dut):
         assert dut.uo_out[0].value == 0, (
             "Expected PWM output to remain low for duty cycle 0x00"
         )
+    
