@@ -153,7 +153,7 @@ async def test_spi(dut):
 @cocotb.test()
 async def test_pwm_freq(dut):
     # Write your test here
-    clock = Clock(dut.clk, 100, unit="ns") #this clock has a period of 100 ns, which is 10 MHz
+    clock = Clock(dut.clk, 100, units="ns") #this clock has a period of 100 ns, which is 10 MHz
     cocotb.start_soon(clock.start())  # Starts the clock
     dut.ena.value = 1 #turns on the PWM module
     dut.ui_in.value = ui_in_logicarray(1, 0, 0) #sets the initial ncs to be 1 which is off, COPI to be 0 and SCLK to be 0
@@ -165,10 +165,10 @@ async def test_pwm_freq(dut):
     await send_spi_transaction(dut, 1, 0x02, 0x01) #this transaction goes to the address 0x02 and then turns it on, so the output will be inabled and the frequency will be 1 Hz
     await send_spi_transaction(dut, 1, 0x04, 0x80) #it is writing 8, which is half of the hex 128 that is the full space of the reg which means that the pwm will be 50%
     await RisingEdge(dut.uo_out[0])
-    first_rise_ns = cocotb.utils.get_sim_time(unit="ns")
+    first_rise_ns = cocotb.utils.get_sim_time(units="ns")
 
     await RisingEdge(dut.uo_out[0])
-    second_rise_ns = cocotb.utils.get_sim_time(unit="ns")
+    second_rise_ns = cocotb.utils.get_sim_time(units="ns")
 
     period_ns = second_rise_ns - first_rise_ns
     frequency_hz = 1_000_000_000 / period_ns
@@ -179,7 +179,7 @@ async def test_pwm_freq(dut):
 
 @cocotb.test()
 async def test_pwm_duty(dut):
-    clock = Clock(dut.clk, 100, unit="ns")
+    clock = Clock(dut.clk, 100, units="ns")
     cocotb.start_soon(clock.start())
     dut.ena.value = 1 #turns on the PWM module
     dut.ui_in.value = ui_in_logicarray(1, 0, 0) #sets the initial ncs to be 1 which is off, COPI to be 0 and SCLK to be 0
@@ -191,13 +191,13 @@ async def test_pwm_duty(dut):
     await send_spi_transaction(dut, 1, 0x02, 0x01)
     await send_spi_transaction(dut, 1, 0x04, 0x80)
     await RisingEdge(dut.uo_out[0])
-    rise_1_ns = cocotb.utils.get_sim_time(unit="ns")
+    rise_1_ns = cocotb.utils.get_sim_time(units="ns")
 
     await FallingEdge(dut.uo_out[0])
-    fall_ns = cocotb.utils.get_sim_time(unit="ns")
+    fall_ns = cocotb.utils.get_sim_time(units="ns")
 
     await RisingEdge(dut.uo_out[0])
-    rise_2_ns = cocotb.utils.get_sim_time(unit="ns")
+    rise_2_ns = cocotb.utils.get_sim_time(units="ns")
 
     high_time_ns = fall_ns - rise_1_ns
     low_time_ns = rise_2_ns - fall_ns
